@@ -1,6 +1,8 @@
 package me.miltz.labelprinter;
 
+import java.awt.Color;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -10,41 +12,59 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 public class Builder {
 
-  private final Config config;
+  private final float pageWidth;
+  private final float pageHeight;
+  private final float[] pagePadding;
+  private final float cellWidth;
+  private final float cellHeight;
+  private final float[] cellPadding;
+  private final float lineHeight;
+  private final float fontHeight;
+  private final Color fontColor;
+  private final int numRows;
+  private final int numCols;
+
   private final float xOffset;
   private final float yOffset;
 
-  private int numPerPage;
-  private int numPages;
-
   public Builder(Config config) {
-    this.config = new Config(config);
-    xOffset = config.getCellPadding()[3] + config.getPagePadding()[3];
-    yOffset =
-      config.getPageHeight() -
-      config.getCellPadding()[0] -
-      config.getPagePadding()[0];
+    pageWidth = config.getPageWidth();
+    pageHeight = config.getPageHeight();
+    pagePadding = config.getPagePadding();
+    cellWidth = config.getCellWidth();
+    cellHeight = config.getCellHeight();
+    cellPadding = config.getCellPadding();
+    lineHeight = config.getLineHeight();
+    fontHeight = config.getFontHeight();
+    fontColor = config.getFontColor();
+    numRows = config.getNumRows();
+    numCols = config.getNumCols();
+
+    xOffset = cellPadding[3] + pagePadding[3];
+    yOffset = pageHeight - cellPadding[0] - pagePadding[0];
   }
 
-  public PDDocument build(final Recipient[] recipients)
+  public PDDocument build(final List<Recipient> recipients)
     throws NullPointerException, IOException {
+    int numPerPage, numPages;
+    int numRecipients = recipients.size();
     Objects.requireNonNull(recipients);
-    numPerPage = config.getNumCols() * config.getNumRows();
-    numPages = 1 + (recipients.length - 1) / numPerPage;
+    numPerPage = numCols * numRows;
+    numPages = 1 + (numRecipients - 1) / numPerPage;
     var doc = new PDDocument();
     var rect = new PDRectangle();
-    rect.setUpperRightX(config.getPageWidth());
-    rect.setUpperRightY(config.getPageHeight());
+    rect.setUpperRightX(pageWidth);
+    rect.setUpperRightY(pageHeight);
     for (int i = 0; i < numPages; i++) {
       var page = new PDPage(rect);
       doc.addPage(page);
       try (var cs = new PDPageContentStream(doc, page)) {
         var indexOffset = i * numPerPage;
         for (int j = 0; j < numPerPage; j++) {
-          if (j + indexOffset >= recipients.length) {
+          if (j + indexOffset >= numRecipients) {
             break;
           }
-          drawCell(recipients[indexOffset + j], j, cs);
+          drawCell(recipients.get(indexOffset + j), j, cs);
         }
       }
     }
@@ -60,21 +80,21 @@ public class Builder {
     if (recipient == null || cs == null) {
       return;
     }
-    var x = xOffset + (numCell % config.getNumCols()) * config.getCellWidth();
-    var y = yOffset - (numCell / config.getNumCols()) * config.getCellHeight();
+    var x = xOffset + (numCell % numCols) * cellWidth;
+    var y = yOffset - (numCell / numCols) * cellHeight;
     writeText(x, y, recipient.getName(), cs);
     var addr = recipient.getAddress();
-    y -= config.getLineHeight() * 2f;
+    y -= lineHeight * 2f;
     writeText(x, y, addr[0], cs);
-    y -= config.getLineHeight();
+    y -= lineHeight;
     writeText(x, y, addr[1], cs);
   }
 
   private void writeText(float x, float y, String text, PDPageContentStream cs)
     throws IOException {
     cs.beginText();
-    cs.setFont(PDType1Font.HELVETICA, config.getFontHeight());
-    cs.setNonStrokingColor(config.getFontColor());
+    cs.setFont(PDType1Font.HELVETICA, fontHeight);
+    cs.setNonStrokingColor(fontColor);
     cs.newLineAtOffset(x, y);
     cs.showText(text);
     cs.endText();

@@ -4,6 +4,7 @@ import java.awt.Color;
 
 public class Config {
 
+  // Page layout and style
   private float pageWidth;
   private float pageHeight;
   private float[] pagePadding;
@@ -15,7 +16,8 @@ public class Config {
   private Color fontColor;
   private int numRows;
   private int numCols;
-  private int recipientLevel;
+
+  // Input parsing
   private String[] namePattern;
   private String[][] addressPattern;
 
@@ -31,7 +33,6 @@ public class Config {
     fontColor = other.fontColor;
     numRows = other.numRows;
     numCols = other.numCols;
-    recipientLevel = other.recipientLevel;
     namePattern = other.namePattern.clone();
     addressPattern = new String[other.addressPattern.length][];
     for (int i = 0; i < addressPattern.length; i++) {
@@ -51,7 +52,6 @@ public class Config {
     config.setFontHeight(fromMm(4));
     config.setLineHeight(fromMm(5));
     config.setFontColor(Color.BLACK);
-    config.setRecipientLevel(1);
     config.setNamePattern(new String[] { "Vorname", "Nachname" });
     config.setAddressPattern(
       new String[][] { { "Anschrift" }, { "PLZ", "Wohnort" } }
@@ -87,14 +87,6 @@ public class Config {
 
   public void setNamePattern(String[] namePattern) {
     this.namePattern = namePattern;
-  }
-
-  public int getRecipientLevel() {
-    return recipientLevel;
-  }
-
-  public void setRecipientLevel(int recipientLevel) {
-    this.recipientLevel = recipientLevel;
   }
 
   public int getNumCols() {
