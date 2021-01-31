@@ -21,8 +21,8 @@ dependencies {
     testImplementation 'junit:junit:4.13'
 
     // This dependency is used by the application.
-    implementation 'com.google.guava:guava:29.0-jre'
     implementation 'org.apache.pdfbox:pdfbox:2.0.13'
+    implementation 'org.jdom:jdom2:2.0.5'
 }
 
 application {

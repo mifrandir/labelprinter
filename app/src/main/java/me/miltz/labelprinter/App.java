@@ -3,20 +3,25 @@
  */
 package me.miltz.labelprinter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Scanner;
 
 public class App {
 
   public static void main(String[] args) throws IOException {
-    var rec = new Recipient(
-      "Franz Miltz",
-      new String[] { "Kirschallee 32", "03099 Kolkwitz" }
-    );
-    var recs = new Recipient[24];
-    for (int i = 0; i < 24; i++) {
-      recs[i] = rec;
+    File file = new File("test.xml");
+    byte[] data = new byte[(int) file.length()];
+    try (var fis = new FileInputStream(file);) {
+      fis.read(data);
     }
-    var builder = new Builder(Config.defaultConfig());
+
+    String str = new String(data, "UTF-8");
+    var config = Config.defaultConfig();
+    var parser = new Parser(config);
+    var recs = parser.parse(str);
+    var builder = new Builder(config);
     var doc = builder.build(recs);
     doc.save("demo.pdf");
     doc.close();
