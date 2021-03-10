@@ -3,6 +3,8 @@ package me.miltz.labelprinter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.logging.*;
@@ -19,12 +21,29 @@ class Parser {
 
   private String[][] addressPattern;
   private String[] namePattern;
+  private String idPattern;
   private Logger log;
 
   public Parser(Config config) {
     addressPattern = config.getAddressPattern();
     namePattern = config.getNamePattern();
+    idPattern = config.getIdPattern();
     this.log = Logger.getLogger(Parser.class.getName());
+  }
+
+  private List<Recipient> filter(List<Recipient> raw) {
+    var recipients = new ArrayList<Recipient>();
+    var seen = new HashSet<Integer>();
+    for (var rec : raw) {
+      if (seen.contains(rec.getId())) {
+        log.info("Dropped " + rec.getName());
+      } else {
+        seen.add(rec.getId());
+        recipients.add(rec);
+      }
+    }
+    Collections.sort(recipients);
+    return recipients;
   }
 
   public List<Recipient> parse(String input) {
@@ -56,9 +75,10 @@ class Parser {
         }
         address[i] = addressJoiner.toString();
       }
-      recipients.add(new Recipient(name, address));
+      int id = Integer.parseInt(xmlRecipient.getChildText(idPattern));
+      recipients.add(new Recipient(name, address, id));
     }
-    return recipients;
+    return filter(recipients);
   }
 
   private Document readIntoDocument(String input) {

@@ -20,6 +20,7 @@ public class Config {
   // Input parsing
   private String[] namePattern;
   private String[][] addressPattern;
+  private String idPattern;
 
   public Config(Config other) {
     pageWidth = other.pageWidth;
@@ -40,6 +41,14 @@ public class Config {
     }
   }
 
+  public String getIdPattern() {
+    return idPattern;
+  }
+
+  public void setIdPattern(String idPattern) {
+    this.idPattern = idPattern;
+  }
+
   public static Config defaultConfig() {
     var config = new Config();
     config.setPageWidth(fromMm(210));
@@ -56,6 +65,7 @@ public class Config {
     config.setAddressPattern(
       new String[][] { { "Anschrift" }, { "PLZ", "Wohnort" } }
     );
+    config.setIdPattern("Parzelle");
     config.numCols = (int) Math.floor(config.pageWidth / config.cellWidth);
     config.numRows = (int) Math.floor(config.pageHeight / config.cellHeight);
     config.setPagePadding(
