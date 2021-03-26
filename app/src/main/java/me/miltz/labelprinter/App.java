@@ -6,24 +6,42 @@ package me.miltz.labelprinter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
 
 public class App {
 
   public static void main(String[] args) throws IOException {
-    File file = new File("test.xml");
-    byte[] data = new byte[(int) file.length()];
-    try (var fis = new FileInputStream(file);) {
-      fis.read(data);
+    // Determining the input file
+    File inFile;
+    if (args.length > 1) {
+      inFile = new File(args[1]);
+    } else {
+      inFile = new File("test.xml");
     }
-
-    String str = new String(data, "UTF-8");
+    // Determining the output file
+    String outPath;
+    if (args.length > 2) {
+      outPath = args[2];
+    } else {
+      outPath = "test.pdf";
+    }
+    // Reading the input
+    byte[] data = new byte[(int) inFile.length()];
+    try (var fis = new FileInputStream(inFile);) {
+      int numRead = fis.read(data);
+      if (numRead <= 0) {
+        throw new IOException();
+      }
+    }
+    // Building output
+    String str = new String(data, StandardCharsets.UTF_8);
     var config = Config.defaultConfig();
     var parser = new Parser(config);
     var recs = parser.parse(str);
     var builder = new Builder(config);
     var doc = builder.build(recs);
-    doc.save("demo.pdf");
+    // Writing output
+    doc.save(outPath);
     doc.close();
   }
 }
