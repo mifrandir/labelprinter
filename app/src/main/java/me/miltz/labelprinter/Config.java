@@ -4,6 +4,9 @@ import java.awt.Color;
 
 public class Config {
 
+  // Standard scaling from mm to PDF units
+  private static float defaultScaling = 72.0f / 25.4f;
+
   // Page layout and style
   private float pageWidth;
   private float pageHeight;
@@ -21,6 +24,7 @@ public class Config {
   private String[] namePattern;
   private String[][] addressPattern;
   private String idPattern;
+  private String groupPattern;
 
   public Config(Config other) {
     pageWidth = other.pageWidth;
@@ -39,6 +43,8 @@ public class Config {
     for (int i = 0; i < addressPattern.length; i++) {
       addressPattern[i] = other.addressPattern[i].clone();
     }
+    idPattern = other.idPattern;
+    groupPattern = other.groupPattern;
   }
 
   public String getIdPattern() {
@@ -49,14 +55,23 @@ public class Config {
     this.idPattern = idPattern;
   }
 
+  public String getGroupPattern() {
+    return groupPattern;
+  }
+
+  public void setGroupPattern(String groupPattern) {
+    this.groupPattern = groupPattern;
+  }
+
   public static Config defaultConfig() {
     var config = new Config();
-    config.setPageWidth(fromMm(210));
-    config.setPageHeight(fromMm(297));
+    // Keeping actual A4 page size
+    config.setPageWidth(210f * defaultScaling);
+    config.setPageHeight(297f * defaultScaling);
     config.setCellWidth(fromMm(70));
     config.setCellHeight(fromMm(36));
     config.setCellPadding(
-      new float[] { fromMm(6), fromMm(6), fromMm(6), fromMm(6) }
+      new float[] { fromMm(8), fromMm(8), fromMm(8), fromMm(8) }
     );
     config.setFontHeight(fromMm(4));
     config.setLineHeight(fromMm(5));
@@ -66,8 +81,9 @@ public class Config {
       new String[][] { { "Anschrift" }, { "PLZ", "Wohnort" } }
     );
     config.setIdPattern("Parzelle");
-    config.numCols = (int) Math.floor(config.pageWidth / config.cellWidth);
-    config.numRows = (int) Math.floor(config.pageHeight / config.cellHeight);
+    config.setGroupPattern("Komplex");
+    config.numCols = 3;
+    config.numRows = 8;
     config.setPagePadding(
       new float[] {
         (config.pageHeight - config.numRows * config.cellHeight) / 2, // top
@@ -79,8 +95,9 @@ public class Config {
     return config;
   }
 
-  private static float fromMm(float x) {
-    return 72.0f / 25.4f * x;
+  public static float fromMm(float x) {
+    // Custom scaling for specific printer (some settings are wrong, I know...)
+    return 100f / 34.4f * x;
   }
 
   public String[][] getAddressPattern() {

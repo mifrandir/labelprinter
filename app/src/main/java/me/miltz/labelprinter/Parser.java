@@ -22,12 +22,14 @@ class Parser {
   private String[][] addressPattern;
   private String[] namePattern;
   private String idPattern;
+  private String groupPattern;
   private Logger log;
 
   public Parser(Config config) {
     addressPattern = config.getAddressPattern();
     namePattern = config.getNamePattern();
     idPattern = config.getIdPattern();
+    groupPattern = config.getGroupPattern();
     this.log = Logger.getLogger(Parser.class.getName());
   }
 
@@ -76,7 +78,8 @@ class Parser {
         address[i] = addressJoiner.toString();
       }
       int id = Integer.parseInt(xmlRecipient.getChildText(idPattern));
-      recipients.add(new Recipient(name, address, id));
+      int group = Integer.parseInt(xmlRecipient.getChildText(groupPattern));
+      recipients.add(new Recipient(name, address, id, group));
     }
     return filter(recipients);
   }
