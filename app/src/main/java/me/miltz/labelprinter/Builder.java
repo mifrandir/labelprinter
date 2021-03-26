@@ -71,6 +71,57 @@ public class Builder {
     return doc;
   }
 
+  // Creates a document containing two pages. The first contains lines with
+  // distance 100 in PDF units for calibrating the scaling and the second
+  // contains lines that are 20mm apart to verify the current scaling.
+  public PDDocument buildMarkers() throws NullPointerException, IOException {
+    var doc = new PDDocument();
+    var rect = new PDRectangle();
+    rect.setUpperRightX(pageWidth);
+    rect.setUpperRightY(pageHeight);
+    var markerPage = new PDPage(rect);
+    doc.addPage(markerPage);
+    try (var cs = new PDPageContentStream(doc, markerPage)) {
+      drawMarkers(cs);
+    }
+    var mmMarkerPage = new PDPage(rect);
+    doc.addPage(mmMarkerPage);
+    try (var cs = new PDPageContentStream(doc, mmMarkerPage)) {
+      drawMmMarkers(cs);
+    }
+    return doc;
+  }
+
+  // Used to print lines that are exactly 100 PDF units apart to calibrate
+  // the scaling for a specific printer.
+  private void drawMarkers(PDPageContentStream cs) throws IOException {
+    cs.setNonStrokingColor(fontColor);
+    for (float y = 0; y < pageHeight; y += 100.0) {
+      cs.moveTo(0, y);
+      cs.lineTo(pageWidth, y);
+    }
+    for (float x = 0; x < pageWidth; x += 100.0) {
+      cs.moveTo(x, 0);
+      cs.lineTo(x, pageHeight);
+    }
+    cs.stroke();
+  }
+
+  // Used to check that the conversion to mm works on the specific printer.
+  // Prints lines that should have a distance of exactly 20mm.
+  private void drawMmMarkers(PDPageContentStream cs) throws IOException {
+    cs.setNonStrokingColor(fontColor);
+    for (float y = 0; y < pageHeight; y += Config.fromMm(20)) {
+      cs.moveTo(0, y);
+      cs.lineTo(pageWidth, y);
+    }
+    for (float x = 0; x < pageWidth; x += Config.fromMm(20)) {
+      cs.moveTo(x, 0);
+      cs.lineTo(x, pageHeight);
+    }
+    cs.stroke();
+  }
+
   private void drawCell(
     Recipient recipient,
     int numCell,
@@ -84,7 +135,7 @@ public class Builder {
     var y = yOffset - (numCell / numCols) * cellHeight;
     writeText(x, y, recipient.getName(), cs);
     var addr = recipient.getAddress();
-    y -= lineHeight * 2f;
+    y -= lineHeight;
     writeText(x, y, addr[0], cs);
     y -= lineHeight;
     writeText(x, y, addr[1], cs);
