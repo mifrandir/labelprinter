@@ -11,3 +11,10 @@ label layouts.
 
 If you have any questions or feature requests, let me know. For now I will not be putting
 any work into this.
+
+## Usage
+
+```
+$ ./gradlew build
+$ java -jar app/build/libs/app-all.jar "Mitglieder aktuell.xml" "Mitglieder aktuell.pdf"
+```
