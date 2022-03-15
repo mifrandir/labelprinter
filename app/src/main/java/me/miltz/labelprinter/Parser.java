@@ -10,7 +10,6 @@ import java.util.StringJoiner;
 import java.util.logging.*;
 import java.util.logging.Level;
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.jdom2.*;

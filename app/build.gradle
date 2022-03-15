@@ -7,7 +7,7 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'application'
 }
 
@@ -25,7 +25,6 @@ dependencies {
     implementation 'org.jdom:jdom2:2.0.5'
 }
 
-application {
-    // Define the main class for the application.
-    mainClass = 'me.miltz.labelprinter.App'
+shadowJar {
+    mainClassName = 'me.miltz.labelprinter.App'
 }

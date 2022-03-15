@@ -12,21 +12,15 @@ public class App {
 
   public static void main(String[] args) throws IOException {
     // Determining the input file
-    File inFile;
-    if (args.length > 1) {
-      inFile = new File(args[1]);
-    } else {
-      inFile = new File("test.xml");
+    if (args.length < 2) {
+      System.err.println("ERROR: Missing required arguments.");
+      System.err.println("Usage: label-printer <input.xml> <output.pdf>");
+      return;
     }
-    // Determining the output file
-    String outPath;
-    if (args.length > 2) {
-      outPath = args[2];
-    } else {
-      outPath = "test.pdf";
-    }
+    final File inFile = new File(args[0]);
+    final File outFile = new File(args[1]);
     // Reading the input
-    byte[] data = new byte[(int) inFile.length()];
+    final byte[] data = new byte[(int) inFile.length()];
     try (var fis = new FileInputStream(inFile);) {
       int numRead = fis.read(data);
       if (numRead <= 0) {
@@ -34,14 +28,14 @@ public class App {
       }
     }
     // Building output
-    String str = new String(data, StandardCharsets.UTF_8);
-    var config = Config.defaultConfig();
-    var parser = new Parser(config);
-    var recs = parser.parse(str);
-    var builder = new Builder(config);
-    var doc = builder.build(recs);
+    final String str = new String(data, StandardCharsets.UTF_8);
+    final var config = Config.defaultConfig();
+    final var parser = new Parser(config);
+    final var recs = parser.parse(str);
+    final var builder = new Builder(config);
+    final var doc = builder.build(recs);
     // Writing output
-    doc.save(outPath);
+    doc.save(outFile);
     doc.close();
   }
 }
