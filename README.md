@@ -18,3 +18,10 @@ any work into this.
 $ ./gradlew build
 $ java -jar app/build/libs/app-all.jar "Mitglieder aktuell.xml" "Mitglieder aktuell.pdf"
 ```
+
+## Dependencies
+
+Other versions may work, but these are tried and tested:
+
+- [Java JDK 17](https://www.oracle.com/java/technologies/downloads/)
+- Gradle 7.5
