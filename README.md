@@ -15,6 +15,7 @@ any work into this.
 ## Usage
 
 ```
+$ ./gradlew wrapper --gradle-version 7.5
 $ ./gradlew build
 $ java -jar app/build/libs/app-all.jar "Mitglieder aktuell.xml" "Mitglieder aktuell.pdf"
 ```
