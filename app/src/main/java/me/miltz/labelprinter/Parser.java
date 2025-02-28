@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.logging.*;
@@ -32,17 +32,18 @@ class Parser {
     this.log = Logger.getLogger(Parser.class.getName());
   }
 
-  private List<Recipient> filter(List<Recipient> raw) {
-    var recipients = new ArrayList<Recipient>();
-    var seen = new HashSet<Integer>();
-    for (var rec : raw) {
-      if (seen.contains(rec.getId())) {
-        log.info("Dropped " + rec.getName());
+  private List<Recipient> filter(final List<Recipient> raw) {
+    var recipientsById = new HashMap<Integer, Recipient>();
+    for (final var recipient : raw) {
+      final var id = recipient.getId();
+      final var previousRecipient = recipientsById.get(id);
+      if (previousRecipient != null) {
+        log.info("Dropped " + recipient.getName() + " as they have the same address as " + previousRecipient.getName());
       } else {
-        seen.add(rec.getId());
-        recipients.add(rec);
+        recipientsById.put(id, recipient);
       }
     }
+    var recipients = new ArrayList<Recipient>(recipientsById.values());
     Collections.sort(recipients);
     return recipients;
   }
@@ -78,7 +79,9 @@ class Parser {
       }
       int id = Integer.parseInt(xmlRecipient.getChildText(idPattern));
       int group = Integer.parseInt(xmlRecipient.getChildText(groupPattern));
-      recipients.add(new Recipient(name, address, id, group));
+      var recipient = new Recipient(name, address, id, group);
+      log.info(recipient.toString());
+      recipients.add(recipient);
     }
     return filter(recipients);
   }

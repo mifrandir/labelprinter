@@ -45,7 +45,7 @@ public class Builder {
   }
 
   public PDDocument build(final List<Recipient> recipients)
-    throws NullPointerException, IOException {
+      throws NullPointerException, IOException {
     int numPerPage, numPages;
     int numRecipients = recipients.size();
     Objects.requireNonNull(recipients);
@@ -123,11 +123,10 @@ public class Builder {
   }
 
   private void drawCell(
-    Recipient recipient,
-    int numCell,
-    PDPageContentStream cs
-  )
-    throws IOException {
+      Recipient recipient,
+      int numCell,
+      PDPageContentStream cs)
+      throws IOException {
     if (recipient == null || cs == null) {
       return;
     }
@@ -135,14 +134,14 @@ public class Builder {
     var y = yOffset - (numCell / numCols) * cellHeight;
     writeText(x, y, recipient.getName(), cs);
     var addr = recipient.getAddress();
-    y -= lineHeight;
-    writeText(x, y, addr[0], cs);
-    y -= lineHeight;
-    writeText(x, y, addr[1], cs);
+    for (var line : addr.toLines()) {
+      y -= lineHeight;
+      writeText(x, y, line, cs);
+    }
   }
 
   private void writeText(float x, float y, String text, PDPageContentStream cs)
-    throws IOException {
+      throws IOException {
     cs.beginText();
     cs.setFont(PDType1Font.HELVETICA, fontHeight);
     cs.setNonStrokingColor(fontColor);
