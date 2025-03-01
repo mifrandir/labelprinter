@@ -2,6 +2,7 @@ package me.miltz.labelprinter;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -44,31 +45,34 @@ public class Builder {
     yOffset = pageHeight - cellPadding[0] - pagePadding[0];
   }
 
-  public PDDocument build(final List<Recipient> recipients)
-      throws NullPointerException, IOException {
-    int numPerPage, numPages;
-    int numRecipients = recipients.size();
-    Objects.requireNonNull(recipients);
-    numPerPage = numCols * numRows;
-    numPages = 1 + (numRecipients - 1) / numPerPage;
-    var doc = new PDDocument();
-    var rect = new PDRectangle();
-    rect.setUpperRightX(pageWidth);
-    rect.setUpperRightY(pageHeight);
-    for (int i = 0; i < numPages; i++) {
-      var page = new PDPage(rect);
-      doc.addPage(page);
-      try (var cs = new PDPageContentStream(doc, page)) {
-        var indexOffset = i * numPerPage;
-        for (int j = 0; j < numPerPage; j++) {
-          if (j + indexOffset >= numRecipients) {
-            break;
-          }
-          drawCell(recipients.get(indexOffset + j), j, cs);
-        }
+  public PDPage buildPage(final PDDocument document, final PDRectangle rectangle, final List<Recipient> recipients)
+      throws IOException {
+    var page = new PDPage(rectangle);
+    document.addPage(page);
+    try (var cs = new PDPageContentStream(document, page)) {
+      for (int i = 0; i < recipients.size(); i++) {
+        drawCell(recipients.get(i), i, cs);
       }
     }
-    return doc;
+    return page;
+  }
+
+  public PDDocument build(final List<Recipient> recipients)
+      throws NullPointerException, IOException {
+    Objects.requireNonNull(recipients);
+    var numRecipients = recipients.size();
+    var numPerPage = numCols * numRows;
+    var numPages = 1 + (numRecipients - 1) / numPerPage;
+    var rectangle = new PDRectangle();
+    rectangle.setUpperRightX(pageWidth);
+    rectangle.setUpperRightY(pageHeight);
+    var document = new PDDocument();
+    for (int i = 0; i < numPages; i++) {
+      var start = i * numPerPage;
+      var end = Math.min(start + numPerPage, recipients.size());
+      buildPage(document, rectangle, recipients.subList(start, end));
+    }
+    return document;
   }
 
   // Creates a document containing two pages. The first contains lines with
@@ -124,19 +128,19 @@ public class Builder {
 
   private void drawCell(
       Recipient recipient,
-      int numCell,
-      PDPageContentStream cs)
+      int totalNumCells,
+      PDPageContentStream page)
       throws IOException {
-    if (recipient == null || cs == null) {
+    if (recipient == null || page == null) {
       return;
     }
-    var x = xOffset + (numCell % numCols) * cellWidth;
-    var y = yOffset - (numCell / numCols) * cellHeight;
-    writeText(x, y, recipient.getName(), cs);
+    var x = xOffset + (totalNumCells % numCols) * cellWidth;
+    var y = yOffset - (totalNumCells / numCols) * cellHeight;
+    writeText(x, y, recipient.getName(), page);
     var addr = recipient.getAddress();
     for (var line : addr.toLines()) {
       y -= lineHeight;
-      writeText(x, y, line, cs);
+      writeText(x, y, line, page);
     }
   }
 
